@@ -1,9 +1,9 @@
 // ==UserScript==
-// @name         Highlight and Blink Selected Word
+// @name         Highlight and Blink Selected Word (Preserve Selection)
 // @namespace    http://tampermonkey.net/
-// @version      1.1
-// @description  Optimize edilmiş seçili kelimeyi vurgulayıp yanıp söndüren script.
-// @author       fablesalive games
+// @version      1.2
+// @description  Seçimi kaybetmeden kelimeyi vurgulayıp yanıp söndüren script.
+// @author       Kürşat Türkay
 // @match        *://*/*
 // @grant        none
 // ==/UserScript==
@@ -12,6 +12,7 @@
   "use strict";
 
   let previousHighlights = [];
+  let selectedWord = '';
 
   
   const style = document.createElement("style");
@@ -77,7 +78,9 @@
     const selection = window.getSelection();
     const word = selection.toString().trim();
 
-    if (!word) return;
+    if (!word || word === selectedWord) return; 
+
+    selectedWord = word; 
 
     clearPreviousHighlights();
 
@@ -88,6 +91,16 @@
       }
     });
 
-    selection.removeAllRanges();
+    
+    setTimeout(() => {
+      const range = document.createRange();
+      const selection = window.getSelection();
+      const start = selection.getRangeAt(0).startContainer;
+      const end = selection.getRangeAt(0).endContainer;
+      range.setStart(start, selection.getRangeAt(0).startOffset);
+      range.setEnd(end, selection.getRangeAt(0).endOffset);
+      selection.removeAllRanges();
+      selection.addRange(range);
+    }, 10);
   });
 })();
